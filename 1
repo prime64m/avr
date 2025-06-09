@@ -1,69 +1,358 @@
-1Greatestof 3 num .org 0|.equ largest=0*0060
-Ldi r16,27|ldi r17,27 | ldi r18,-10| cp r16,r17
-Brge l1 | move r16,r17| l1:cp r16,r18| l2:
-sts lagest r16 | here : jmp here
-2Divide2num .org 0| .equ result=0x0300|
-.def dividend =r17| .def divisor=818 | .def
-Counter =r19| ldi dividend, 10 | ldi divisor,2
-Ldi counter ,0| clc| l1=inc counter| sub
-Dividend,divisor | brge l1 | dec counter|
-Sts result,counter| here : rjmp here
-3Powerof2ornot .org 0|ldir16.128 | ldi r19,0
-Ldi r17,0x08|clc | top:lsr r16| brcc l1 |
-Inc r19| l1:dec r17|brne top| here:rjmp here
-4Fact .org 0| ;stack initialization|ldi r18,high(
-Ramend)|out sph,r18|out spl,r18| rdi r19,0x05
-Rdi r18,0x01|call fact|ldi r16,0xff|out ddra,r16|
-Out porta,r18| here:rjmp here|fact:nop|loop:
-Mul r18,r19|dec r19|brne loop|ret
-5Accept2 8 bitnum .org 0| ldi r16,0xff| out ddra,16|
-out ddrb,16| out ddrc,16| out ddrd,16| ldi r16
-,0x45|out porta,r16|ldi r17,0x20|out portb,r17|
-Ldi r20,0x00|out ddra,r20|out ddrb,r20| in r24
-,pina | in r25,pinb | mul r24,r25|out portc,r0
-Out portd| here : rjmp here
-6Monit the bit of1 .org 0| ldi r16,0xff|out ddra,r16
-Out ddrb,r16|out ddrc,r16| ldi r17,0x20| out portc,
-R17| cli ddrc,1| slis pinc,1| rjmp over| ldi r16,’Y’|
-Out porta,r16|rjmp here| over:ldi r16,’N’|out
-Portb,r16 | here: rjmp here
-7Conv packed bcd to ascii .equ packedbcd=0x300|
-.equ ascii1=0x301|.equ ascii2=0x302| ldi r16,high
-(ramend)|out sph,r16|ldi r16,low(ramend)| out
-Sp1,r16| ldi r20,0x38|sts packedbcd,r20| call
-Conversion|here:rjmp here| coversion: lds r20,packedbcd|mov r21,r20| ldi r22,0x30
-Andi r20,0x0f|add r20,r22| sts ascii1,r20|
-Swap r21|andi r21,0x0f|add r21,r22|
-Sts ascii2,21|ret
-8programtoadd10bytes .include”m32def.inc”
-.org 0| ldi r16,10| sts 0x0300,r16| ldi r16,20
-Sts 0x0301,r16|…………|ldi r16,100|sts 0x0309
-,r16| ldi r21,0|ldi r22,0|ldi r20,0x0300|
-Add r21,r20| ldi r20,0x0301| add r21,r20|
-…..ldi r20,0x0309|add r21,r20| in v19,sreq|
-lsr r19|brcc here|ldi r22,1|here:rjmp here
-9.countnoofeven .org 0|ldi r16,6|ldi xl,0x00|
-Ldi xh,0x06|ldi r20,0|ldi r21,0| ldi r17,2|st
-X+,r17|ldi r17,3|st x+,r17|……ldi r17,12|
-St x+,r17| ldi xl,0X00 |ldi xh,0x06| l1:ld
-R18,x+|ror 18| brcc l2|inc 21|rjmp!=next|
-L2:inc r20|next:dec, r16| brne l1|here:
-Rjmp here
-10blink led #define led_pin8|void setup()
-{pinmode(led_pin,OUTPUT);} void loop()
-[degitalwrite(led_pin,HIGH);delay(1000);
-Digitalwrite(led_pin,LOW); delay(1000);}
-11.switch converter #define ledpin13|
-#define switchpin7|int val=0; void setup()
-{pinmode(ledpin,output);pinmode(switch
-Pin,INPUT);} void loop(){ val=digitalRead
-(switchPin); if(val==high){digitalwrite
-(ledpin,low);} else{digitalwrite(ledpin,high);}}
+1. Greatest of 3 Numbers (AVR Assembly)
 
-12.displaythe given messege RS-12|EN-11|
-D4-5|D5-4|D6-3|D7-2|R/W-GND|VSS-GND| VCC-5V| #include<liquidCrystal.h> const int
-rs=12,en=11,d4=5,d5=4,d6=3,d7=2;
-LiquidCrystallcd(rs,en,d4,d5,,d6,d7);
-void setup() { lcd.begin(16,2); lcd.print
-(“hello world”); void loop(){ lcd.int cursor
-(0,1); lcd.print(mills()/1000);}
+.org 0
+.equ largest = 0x0060
+ldi r16, 27
+ldi r17, 27
+ldi r18, -10
+
+cp r16, r17
+brge l1
+mov r16, r17
+l1: cp r16, r18
+brge l2
+mov r16, r18
+l2: sts largest, r16
+
+here: jmp here
+
+
+2. Divide Two Numbers (AVR Assembly)
+
+.org 0
+.equ result = 0x0300
+
+.def dividend = r17
+.def divisor = r18
+.def counter = r19
+
+ldi dividend, 10
+ldi divisor, 2
+ldi counter, 0
+clc
+
+l1: inc counter
+    sub dividend, divisor
+    brge l1
+
+dec counter
+sts result, counter
+
+here: rjmp here
+
+
+3. Power of 2 or Not (AVR Assembly)
+
+.org 0
+ldi r16, 128
+ldi r17, 8
+ldi r19, 0
+clc
+
+top: lsr r16
+     brcc l1
+     inc r19
+l1:  dec r17
+     brne top
+
+here: rjmp here
+
+
+4. Factorial (AVR Assembly)
+
+.org 0
+ldi r18, high(RAMEND)
+out SPH, r18
+ldi r18, low(RAMEND)
+out SPL, r18
+
+ldi r19, 0x05
+ldi r18, 0x01
+call fact
+
+ldi r16, 0xFF
+out DDRA, r16
+out PORTA, r18
+
+here: rjmp here
+
+fact:
+loop: mul r18, r19
+      dec r19
+      brne loop
+      ret
+
+
+5. Accept 2 Eight-bit Numbers and Multiply
+
+.org 0
+ldi r16, 0xFF
+out DDRA, r16
+out DDRB, r16
+out DDRC, r16
+out DDRD, r16
+
+ldi r16, 0x45
+out PORTA, r16
+ldi r17, 0x20
+out PORTB, r17
+
+ldi r20, 0x00
+out DDRA, r20
+out DDRB, r20
+
+in r24, PINA
+in r25, PINB
+mul r24, r25
+out PORTC, r0
+out PORTD, r1
+
+here: rjmp here
+
+
+6. Monitor the Bit of PORTC
+
+.org 0
+ldi r16, 0xFF
+out DDRA, r16
+out DDRB, r16
+out DDRC, r16
+
+ldi r17, 0x20
+out PORTC, r17
+
+sbic PINC, 1
+rjmp over
+
+ldi r16, 'Y'
+out PORTA, r16
+rjmp here
+
+over:
+ldi r16, 'N'
+out PORTB, r16
+
+here: rjmp here
+
+
+
+7. Convert Packed BCD to ASCII
+
+.equ packedbcd = 0x0300
+.equ ascii1 = 0x0301
+.equ ascii2 = 0x0302
+
+ldi r16, high(RAMEND)
+out SPH, r16
+ldi r16, low(RAMEND)
+out SPL, r16
+
+ldi r20, 0x38
+sts packedbcd, r20
+call conversion
+
+here: rjmp here
+
+conversion:
+lds r20, packedbcd
+mov r21, r20
+ldi r22, 0x30
+
+andi r20, 0x0F
+add r20, r22
+sts ascii1, r20
+
+swap r21
+andi r21, 0x0F
+add r21, r22
+sts ascii2, r21
+ret
+
+
+
+8. Add 10 Bytes (AVR Assembly)
+
+.include "m32def.inc"
+.org 0
+
+; Store values at memory locations 0x0300 to 0x0309
+ldi r16, 10
+sts 0x0300, r16
+ldi r16, 20
+sts 0x0301, r16
+ldi r16, 30
+sts 0x0302, r16
+ldi r16, 40
+sts 0x0303, r16
+ldi r16, 50
+sts 0x0304, r16
+ldi r16, 60
+sts 0x0305, r16
+ldi r16, 70
+sts 0x0306, r16
+ldi r16, 80
+sts 0x0307, r16
+ldi r16, 90
+sts 0x0308, r16
+ldi r16, 100
+sts 0x0309, r16
+
+; Clear registers used for sum
+ldi r21, 0     ; Will hold the sum
+ldi r22, 0     ; Overflow flag
+
+; Load and add each value manually
+lds r20, 0x0300
+add r21, r20
+lds r20, 0x0301
+add r21, r20
+lds r20, 0x0302
+add r21, r20
+lds r20, 0x0303
+add r21, r20
+lds r20, 0x0304
+add r21, r20
+lds r20, 0x0305
+add r21, r20
+lds r20, 0x0306
+add r21, r20
+lds r20, 0x0307
+add r21, r20
+lds r20, 0x0308
+add r21, r20
+lds r20, 0x0309
+add r21, r20
+
+
+in r19, SREG
+lsr r19        
+brcc here      
+ldi r22, 1     
+
+here:
+rjmp here
+
+
+
+
+
+9. Count Number of Even Numbers
+
+.org 0
+
+ldi r16, 6             
+ldi XL, 0x00
+ldi XH, 0x06           
+
+ldi r20, 0             
+ldi r21, 0             
+
+ldi r17, 2
+st X+, r17
+ldi r17, 3
+st X+, r17
+ldi r17, 4
+st X+, r17
+ldi r17, 5
+st X+, r17
+ldi r17, 6
+st X+, r17
+ldi r17, 7
+st X+, r17
+ldi r17, 8
+st X+, r17
+ldi r17, 9
+st X+, r17
+ldi r17, 10
+st X+, r17
+ldi r17, 12
+st X+, r17
+
+ldi XL, 0x00
+ldi XH, 0x06
+
+ldi r16, 10            
+
+l1:
+    ld r18, X+         
+    ror r18            
+    brcc l2            
+    inc r21            
+    rjmp next
+
+l2:
+    inc r20            
+
+next:
+    dec r16
+    brne l1
+
+here:
+    rjmp here
+
+
+
+
+10. Blink LED (Arduino)
+
+#define led_pin 8
+
+void setup() {
+  pinMode(led_pin, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(led_pin, HIGH);
+  delay(1000);
+  digitalWrite(led_pin, LOW);
+  delay(1000);
+}
+
+
+
+11. Switch Converter (Arduino)
+
+#define ledPin 13
+#define switchPin 7
+
+int val = 0;
+
+void setup() {
+  pinMode(ledPin, OUTPUT);
+  pinMode(switchPin, INPUT);
+}
+
+void loop() {
+  val = digitalRead(switchPin);
+  if (val == HIGH) {
+    digitalWrite(ledPin, LOW);
+  } else {
+    digitalWrite(ledPin, HIGH);
+  }
+}
+
+
+
+
+
+12. Display Message on LCD (Arduino with LiquidCrystal)
+
+#include <LiquidCrystal.h>
+
+const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
+void setup() {
+  lcd.begin(16, 2);
+  lcd.print("Hello World");
+}
+
+void loop() {
+  lcd.setCursor(0, 1);
+  lcd.print(millis() / 1000);
+}
+
+
+
+
+
